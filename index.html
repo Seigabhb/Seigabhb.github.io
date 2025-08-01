@@ -80,12 +80,13 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'multiMemoAppWithTitle';
+  const STORAGE_KEY = 'memoManagementApp';
   const memoListDiv = document.getElementById('memoList');
   const titleInput = document.getElementById('titleInput');
   const memoTextarea = document.getElementById('memo');
   const newMemoBtn = document.getElementById('newMemoBtn');
   const deleteMemoBtn = document.getElementById('deleteMemoBtn');
+  const MAX_MEMOS = 10;
 
   let memos = {};
   let currentId = null;
@@ -126,6 +127,11 @@
   }
 
   function createNewMemo() {
+    const memoCount = Object.keys(memos).length;
+    if (memoCount >= MAX_MEMOS) {
+      alert(`メモは最大${MAX_MEMOS}個までです。不要なメモを削除してください。`);
+      return;
+    }
     const id = 'memo_' + Date.now();
     memos[id] = { title: '新規メモ', content: '' };
     currentId = id;
@@ -146,7 +152,6 @@
     memoTextarea.value = '';
   }
 
-  // タイトル変更時に保存
   titleInput.addEventListener('input', () => {
     if (!currentId) return;
     memos[currentId].title = titleInput.value.trim() || '(無題)';
@@ -154,14 +159,12 @@
     renderMemoList();
   });
 
-  // メモ変更時に保存
   memoTextarea.addEventListener('input', () => {
     if (!currentId) return;
     memos[currentId].content = memoTextarea.value;
     saveMemos();
   });
 
-  // 初期化
   loadMemos();
   renderMemoList();
 
