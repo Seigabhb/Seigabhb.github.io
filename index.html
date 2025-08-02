@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
-<title>メモ管理</title>
+<title>メモ管理アプリ</title>
 <style>
   body {
     font-family: monospace;
@@ -32,6 +32,11 @@
     border: 1px solid #ccc;
     font-family: monospace;
     box-sizing: border-box;
+  }
+  #lastUpdated {
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
   }
   textarea {
     width: 100%;
@@ -66,11 +71,13 @@
 </head>
 <body>
 
-<h1>メモ管理</h1>
+<h1>メモ管理アプリ</h1>
 
 <div id="memoList"></div>
 
 <input type="text" id="titleInput" placeholder="メモのタイトルを入力してください" />
+
+<div id="lastUpdated"></div>
 
 <textarea id="memo" placeholder="ここにメモを書いてください..."></textarea>
 
@@ -86,6 +93,7 @@
   const memoTextarea = document.getElementById('memo');
   const newMemoBtn = document.getElementById('newMemoBtn');
   const deleteMemoBtn = document.getElementById('deleteMemoBtn');
+  const lastUpdatedDiv = document.getElementById('lastUpdated');
   const MAX_MEMOS = 10;
 
   let memos = {};
@@ -101,6 +109,9 @@
   }
 
   function saveMemos() {
+    if (currentId && memos[currentId]) {
+      memos[currentId].updatedAt = new Date().toLocaleString();
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(memos));
   }
 
@@ -123,6 +134,9 @@
     currentId = id;
     titleInput.value = memos[id].title || '';
     memoTextarea.value = memos[id].content || '';
+    lastUpdatedDiv.textContent = memos[id].updatedAt
+      ? `最終保存: ${memos[id].updatedAt}`
+      : '';
     renderMemoList();
   }
 
@@ -133,7 +147,11 @@
       return;
     }
     const id = 'memo_' + Date.now();
-    memos[id] = { title: '新規メモ', content: '' };
+    memos[id] = {
+      title: '新規メモ',
+      content: '',
+      updatedAt: new Date().toLocaleString()
+    };
     currentId = id;
     saveMemos();
     renderMemoList();
@@ -150,6 +168,7 @@
     renderMemoList();
     titleInput.value = '';
     memoTextarea.value = '';
+    lastUpdatedDiv.textContent = '';
   }
 
   titleInput.addEventListener('input', () => {
@@ -157,12 +176,14 @@
     memos[currentId].title = titleInput.value.trim() || '(無題)';
     saveMemos();
     renderMemoList();
+    lastUpdatedDiv.textContent = `最終保存: ${memos[currentId].updatedAt}`;
   });
 
   memoTextarea.addEventListener('input', () => {
     if (!currentId) return;
     memos[currentId].content = memoTextarea.value;
     saveMemos();
+    lastUpdatedDiv.textContent = `最終保存: ${memos[currentId].updatedAt}`;
   });
 
   loadMemos();
